@@ -1,4 +1,4 @@
-import React, { Component, ReactNode } from 'react';
+import { Component, type ReactNode } from 'react';
 import Dashboard from './pages/Dashboard';
 
 class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, error: Error | null}> {

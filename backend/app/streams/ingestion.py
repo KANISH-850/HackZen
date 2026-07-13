@@ -18,24 +18,27 @@ async def start_ingestion(camera_id: str, rtsp_url: str):
     except ValueError:
         source = rtsp_url
         
-    cap = cv2.VideoCapture(source)
+    cap = await asyncio.to_thread(cv2.VideoCapture, source)
     is_mock = False
     if not cap.isOpened():
         print(f"Failed to open video source: {rtsp_url}. Using mock dummy generator.")
         is_mock = True
-        
+
     fps = settings.FPS
     frame_time = 1.0 / fps
-    
+
     color = (0, 0, 0)
     while True:
         start_time = time.time()
-        
+
         if not is_mock:
-            ret, frame = cap.read()
+            # cap.read() blocks on I/O; run it off the event loop so it can't
+            # stall websocket traffic or other cameras' ingestion tasks.
+            ret, frame = await asyncio.to_thread(cap.read)
             if not ret:
+                print(f"Lost video source: {rtsp_url}. Reconnecting in 1s...")
                 await asyncio.sleep(1)
-                cap = cv2.VideoCapture(source)
+                cap = await asyncio.to_thread(cv2.VideoCapture, source)
                 continue
         else:
             # Generate a 640x480 dummy frame

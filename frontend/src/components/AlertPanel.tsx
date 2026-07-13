@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function AlertPanel({ alerts }: { alerts: any[] }) {
   return (
     <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg h-full max-h-[500px] flex flex-col">

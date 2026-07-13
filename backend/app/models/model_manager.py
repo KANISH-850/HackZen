@@ -40,13 +40,20 @@ class ModelManager:
             except Exception as e:
                 print(f"⚠ Warning: Failed to load {filename}: {e}")
                 
+    def is_loaded(self, model_name: str) -> bool:
+        return model_name in self.models
+
+    def get_class_names(self, model_name: str) -> dict:
+        return self.class_names.get(model_name, {})
+
     def predict(self, model_name: str, frame, conf: float = 0.5):
         model = self.models.get(model_name)
         if not model:
             return None
-            
+
         # Run inference using the selected device and threshold
         results = model.predict(source=frame, conf=conf, device=self.device, verbose=False)
         return results
 
-model_manager = ModelManager(models_dir="models")
+from ..config import settings
+model_manager = ModelManager(models_dir=settings.MODELS_DIR)

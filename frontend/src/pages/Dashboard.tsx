@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useState } from 'react';
+import { io, type Socket } from 'socket.io-client';
 import LiveFeedGrid from '../components/LiveFeedGrid';
 import AlertPanel from '../components/AlertPanel';
 import RiskHeatmap from '../components/RiskHeatmap';
@@ -8,7 +8,7 @@ import ZoneEditor from '../components/ZoneEditor';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function Dashboard() {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [, setSocket] = useState<Socket | null>(null);
   const [liveFrame, setLiveFrame] = useState(null);
   const [alerts, setAlerts] = useState<any[]>([]);
 

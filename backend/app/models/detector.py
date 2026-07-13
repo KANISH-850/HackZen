@@ -2,54 +2,81 @@ import numpy as np
 from .model_manager import model_manager
 from ..config import settings
 
+PPE_CLASS_TO_FLAG = {
+    "helmet": "helmet",
+    "vest": "vest",
+    "gloves": "gloves",
+    "goggles": "goggles",
+    "mask": "mask",
+    "safety_shoe": "safety_shoe",
+}
+
+
+def _extract_boxes(results, model_key: str):
+    boxes = []
+    if not results:
+        return boxes
+    class_names = model_manager.get_class_names(model_key)
+    for r in results:
+        for box in r.boxes:
+            x1, y1, x2, y2 = box.xyxy[0].tolist()
+            conf = float(box.conf[0])
+            cls_id = int(box.cls[0])
+            class_name = class_names.get(cls_id, str(cls_id))
+            boxes.append({"bbox": [x1, y1, x2, y2], "confidence": conf, "class": class_name})
+    return boxes
+
+
 class Detector:
-    def __init__(self, model_path: str):
-        self.model_path = model_path
-    
+    """
+    Runs real YOLO inference for whichever roles have a loaded model
+    (see settings.PERSON_MODEL_KEY / PPE_MODEL_KEY). No mock/random fallback:
+    a role with no model loaded simply contributes nothing.
+    """
+
+    def __init__(self, model_path: str = None):
+        pass
+
     def predict(self, frame: np.ndarray):
+        person_loaded = model_manager.is_loaded(settings.PERSON_MODEL_KEY)
+        ppe_results = model_manager.predict(settings.PPE_MODEL_KEY, frame, conf=settings.YOLO_CONFIDENCE)
+        ppe_boxes = _extract_boxes(ppe_results, settings.PPE_MODEL_KEY)
+
+        if not person_loaded:
+            # No person model available yet: report the raw PPE-item detections
+            # directly (real, not mocked) instead of a fabricated person box.
+            results = []
+            for item in ppe_boxes:
+                results.append({
+                    "bbox": item["bbox"],
+                    "confidence": item["confidence"],
+                    "class": item["class"],
+                    "ppe": {},
+                    "person_detection": "unavailable",
+                })
+            return results
+
+        person_results = model_manager.predict(settings.PERSON_MODEL_KEY, frame, conf=settings.YOLO_CONFIDENCE)
         results = []
-        
-        # We try to use 'person' model and 'ppe' model if they exist
-        person_results = model_manager.predict("person", frame, conf=settings.YOLO_CONFIDENCE)
-        ppe_results = model_manager.predict("ppe", frame, conf=settings.YOLO_CONFIDENCE)
-        
-        # If no YOLO models are loaded, fallback to mock to prevent crash
-        if person_results is None and ppe_results is None:
-            height, width = frame.shape[:2]
-            x1, y1 = width // 4, height // 4
-            x2, y2 = width * 3 // 4, height * 3 // 4
-            return [{"bbox": [x1, y1, x2, y2], "confidence": 0.88, "class": "person", "ppe": {"helmet": True, "vest": False}}]
-            
-        # Process person detections
-        if person_results:
-            for r in person_results:
-                boxes = r.boxes
-                for box in boxes:
-                    x1, y1, x2, y2 = box.xyxy[0].tolist()
-                    conf = float(box.conf[0])
-                    cls_id = int(box.cls[0])
-                    class_name = model_manager.get_class_names("person").get(cls_id, "person")
-                    
-                    ppe_flags = {"helmet": False, "vest": False}
-                    # Simplified logic: if PPE model detects helmet/vest within this person bbox
-                    if ppe_results:
-                        for ppe_r in ppe_results:
-                            for pbox in ppe_r.boxes:
-                                px1, py1, px2, py2 = pbox.xyxy[0].tolist()
-                                p_cls_id = int(pbox.cls[0])
-                                p_class_name = model_manager.get_class_names("ppe").get(p_cls_id, "ppe")
-                                
-                                # Check if PPE bbox is inside person bbox
-                                if px1 >= x1 and py1 >= y1 and px2 <= x2 and py2 <= y2:
-                                    if "helmet" in p_class_name.lower():
-                                        ppe_flags["helmet"] = True
-                                    elif "vest" in p_class_name.lower():
-                                        ppe_flags["vest"] = True
-                                        
-                    results.append({
-                        "bbox": [x1, y1, x2, y2],
-                        "confidence": conf,
-                        "class": class_name,
-                        "ppe": ppe_flags
-                    })
+        for r in (person_results or []):
+            for box in r.boxes:
+                x1, y1, x2, y2 = box.xyxy[0].tolist()
+                conf = float(box.conf[0])
+
+                ppe_flags = {flag: False for flag in PPE_CLASS_TO_FLAG.values()}
+                for item in ppe_boxes:
+                    px1, py1, px2, py2 = item["bbox"]
+                    # PPE item center falls within the person bbox
+                    pcx, pcy = (px1 + px2) / 2, (py1 + py2) / 2
+                    if x1 <= pcx <= x2 and y1 <= pcy <= y2:
+                        flag = PPE_CLASS_TO_FLAG.get(item["class"].lower())
+                        if flag:
+                            ppe_flags[flag] = True
+
+                results.append({
+                    "bbox": [x1, y1, x2, y2],
+                    "confidence": conf,
+                    "class": "person",
+                    "ppe": ppe_flags,
+                })
         return results

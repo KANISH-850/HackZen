@@ -8,16 +8,23 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     
     # Camera / Stream settings
-    RTSP_URLS: str = "mock" # Comma separated for multiple cameras, '0' for local webcam
+    RTSP_URLS: str = "0" # Comma separated for multiple cameras, '0' for local webcam
     FPS: int = 15
-    
-    # ML Models Paths
-    DETECTOR_MODEL_PATH: str = "weights/detector.onnx"
-    POSE_ESTIMATOR_MODEL_PATH: str = "weights/pose_estimator.onnx"
-    TRACKER_MODEL_PATH: str = "weights/tracker.onnx"
+
+    # YOLO .pt weights are auto-discovered from MODELS_DIR by filename (see model_manager.py).
+    # Each setting below is the filename stem (no extension) of the weight file that plays
+    # that role. Roles with no matching file simply stay unloaded (explicit "unavailable"
+    # state) instead of being faked.
+    MODELS_DIR: str = "models"
+    PERSON_MODEL_KEY: str = "person"
+    PPE_MODEL_KEY: str = "best"
+    POSE_MODEL_KEY: str = "pose"
+
+    # Anomaly / risk-trend models (pickle / onnx). Optional — if the file doesn't exist,
+    # those subsystems report explicitly unavailable rather than inventing a value.
     ANOMALY_MODEL_PATH: str = "weights/anomaly_model.pkl"
     RISK_PREDICTOR_MODEL_PATH: str = "weights/risk_predictor.onnx"
-    
+
     # YOLO Settings
     YOLO_CONFIDENCE: float = 0.5
     

@@ -1,6 +1,7 @@
 import time
 from .notifier import notify_alert
-from ..db import crud, database
+from ..db import crud
+from ..db.database import async_session
 
 class AlertManager:
     def __init__(self):
@@ -35,10 +36,8 @@ class AlertManager:
                     "severity": severity,
                     "details": details
                 }
-                
-                # In real scenario, log to DB:
-                # async for db in database.get_db():
-                #     await crud.create_incident(db, incident_data)
-                #     break
-                    
+
+                async with async_session() as db:
+                    await crud.create_incident(db, incident_data)
+
                 await notify_alert(incident_data)

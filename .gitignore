@@ -17,6 +17,10 @@ backend/weights/*.pkl
 backend/weights/*.pt
 backend/weights/*.pth
 
+# Runtime-generated database
+*.db
+*.db-journal
+
 # Node / Frontend
 node_modules/
 dist/
