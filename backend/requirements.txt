@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+python-socketio
+pydantic
+pydantic-settings
+opencv-python-headless
+numpy
+shapely
+alembic
+aiosqlite
+ultralytics

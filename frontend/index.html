@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Safety Dashboard</title>
+  </head>
+  <body>
+    <div id="error-log" style="color: red; padding: 20px; font-family: monospace; white-space: pre-wrap; font-size: 16px; background: white; z-index: 9999; position: relative;"></div>
+    <script>
+      window.addEventListener('error', function(e) {
+        document.getElementById('error-log').innerText += e.message + '\\n' + e.filename + ':' + e.lineno + '\\n\\n';
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        document.getElementById('error-log').innerText += 'Unhandled Promise Rejection: ' + (e.reason && e.reason.stack ? e.reason.stack : e.reason) + '\\n\\n';
+      });
+      const originalError = console.error;
+      console.error = function(...args) {
+        document.getElementById('error-log').innerText += 'Console Error: ' + args.join(' ') + '\\n\\n';
+        originalError.apply(console, args);
+      };
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
