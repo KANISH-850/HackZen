@@ -116,8 +116,8 @@ unsafe-activity-detection/
 | **Frontend Framework** | React 18.2, Vite, TailwindCSS |
 | **Backend Framework** | FastAPI, Uvicorn, Python-SocketIO |
 | **Computer Vision** | OpenCV (Headless), Ultralytics (YOLO) |
-| **Machine Learning** | PyTorch, ONNX Runtime, Scikit-Learn (Stubs) |
-| **Database** | PostgreSQL, SQLite (Async), SQLAlchemy |
+| **Machine Learning** | PyTorch, NumPy, Shapely |
+| **Database** | PostgreSQL, SQLite, SQLAlchemy, Redis |
 | **Streaming & Comms** | WebSockets (Socket.io), RTSP |
 | **Deployment** | Docker, Docker Compose |
 
@@ -273,9 +273,89 @@ Configure the backend using the `.env` file or environment variables:
 
 ---
 
-## 📚 References
-- [Ultralytics YOLO](https://github.com/ultralytics/ultralytics)
-- [FastAPI Framework](https://fastapi.tiangolo.com/)
-- [React](https://react.dev/)
-- [Socket.io](https://socket.io/)
-- [OpenCV Python](https://pypi.org/project/opencv-python/)
+## ⚖️ Third-Party Acknowledgements & Libraries
+
+This project leverages several incredible open-source libraries and tools:
+- **Backend**: Python 3.10+, FastAPI, Uvicorn, SQLAlchemy, Alembic, asyncpg, python-socketio, Pydantic, OpenCV (headless), NumPy, Shapely.
+- **Frontend**: React 18.2, Vite, TypeScript, TailwindCSS, Axios, socket.io-client, Lucide-react.
+- **Machine Learning**: Ultralytics (YOLO), PyTorch.
+- **Infrastructure & DB**: Docker, Docker Compose, PostgreSQL, Redis, SQLite (aiosqlite).
+
+**APIs Used**:
+- The system exclusively uses its own internal REST and WebSocket APIs. No external third-party APIs (e.g., OpenAI, Google, AWS, Azure, Map APIs) are utilized.
+
+---
+
+## 🗄️ Dataset Attribution
+
+- **No external public datasets** (e.g., Kaggle, Roboflow Universe, COCO, Open Images) were directly included or used in this repository's source tree.
+- The pipeline is designed to work with real-time RTSP streams and webcams out of the box. Any model fine-tuning utilizing specific datasets would require external data not provided within this repository.
+
+---
+
+## 🤖 Pretrained Model Attribution
+
+- **YOLO Pretrained Weights**: The model weights (`best.pt`) used for Person and PPE detection are based on the Ultralytics YOLO architecture. Pretrained weights were used as initialization and integrated into the complete safety system developed by our team.
+
+---
+
+## 💡 Original Contribution
+
+Our team was responsible for the end-to-end design and implementation of the **AI Safety Dashboard**, which includes:
+- **Backend Architecture**: A high-performance, asynchronous FastAPI backend capable of handling continuous video ingestion and inference loops.
+- **OpenCV Processing Pipeline**: Real-time frame buffering and asynchronous handling of RTSP streams.
+- **Real-Time Streaming & WebSockets**: Low-latency transmission of processed frames and incident data using `python-socketio`.
+- **YOLO Integration**: Orchestrating the YOLO object detection model with customized logic for worker and PPE (helmet/vest) overlap analysis.
+- **Risk Engine & Alert Generation**: A multi-factor risk scoring engine that fuses detection data with trajectory and anomaly logic to generate actionable alerts.
+- **Frontend Dashboard**: A responsive, dynamic React application with live video feeds and an alert visualization panel.
+
+We do not claim responsibility for the base YOLO architecture or the foundational pretrained weights used to bootstrap the computer vision models.
+
+---
+
+## 📚 References & Third-Party Resources
+
+| Technology | Purpose | Official Website | License |
+| :--- | :--- | :--- | :--- |
+| **OpenCV** | Video processing & ingestion | [opencv.org](https://opencv.org/) | Apache 2.0 |
+| **Ultralytics** | YOLO Object Detection | [ultralytics.com](https://ultralytics.com/) | AGPL-3.0 |
+| **PyTorch** | Deep Learning Framework | [pytorch.org](https://pytorch.org/) | BSD |
+| **NumPy** | Array manipulations | [numpy.org](https://numpy.org/) | BSD |
+| **FastAPI** | Backend API framework | [fastapi.tiangolo.com](https://fastapi.tiangolo.com/) | MIT |
+| **SQLAlchemy** | Database ORM | [sqlalchemy.org](https://www.sqlalchemy.org/) | MIT |
+| **React** | Frontend UI library | [react.dev](https://react.dev/) | MIT |
+| **TailwindCSS** | Utility-first CSS | [tailwindcss.com](https://tailwindcss.com/) | MIT |
+| **Vite** | Frontend build tool | [vitejs.dev](https://vitejs.dev/) | MIT |
+| **Socket.IO** | Real-time WebSockets | [socket.io](https://socket.io/) | MIT |
+| **Docker** | Containerization | [docker.com](https://www.docker.com/) | Apache 2.0 |
+
+---
+
+## 🧠 Ethical AI
+
+This project is built with safety and ethics in mind. The primary goal of the AI Safety Dashboard is to ensure the physical well-being of workers in hazardous environments.
+- **Privacy**: The system is designed to monitor safety gear and hazardous zones. It does not perform facial recognition or store biometric identities of workers.
+- **Fairness & Bias**: We acknowledge that computer vision models can exhibit bias. While pretrained YOLO models are robust, further deployment in real-world scenarios requires extensive testing to ensure fair detection across diverse demographics and clothing types.
+- **Transparency**: The risk engine uses clear, threshold-based logic (e.g., missing helmet = higher risk) rather than black-box decisions for its core safety alerts.
+
+---
+
+## 📄 License
+
+Currently, this repository does not contain a license file. 
+We **recommend adding an MIT License** (or an appropriate open-source license) to the root of the repository to clarify the permissions and limitations for other developers and researchers.
+
+---
+
+## 📝 Citation
+
+If you use this repository or find our project helpful, please cite us as follows:
+
+```bibtex
+@software{ai_safety_dashboard_2024,
+  author = {HackZen Team},
+  title = {AI Safety Dashboard: Real-Time Unsafe Human Activity Detection},
+  year = {2024},
+  url = {https://github.com/yourusername/unsafe-activity-detection}
+}
+```
